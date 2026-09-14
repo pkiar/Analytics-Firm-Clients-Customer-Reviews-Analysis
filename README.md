@@ -1,116 +1,158 @@
 # Customer Reviews Analysis
 
-## Summative Lab – Analytics Firm Clients
+## Overview
 
-This project analyzes customer reviews using three major data analytics and machine learning approaches:
+This project analyzes Amazon customer reviews using three data science approaches:
 
-1. Natural Language Processing (NLP)
-2. Time Series Analysis
-3. Neural Networks
+1. **NLP** – cleans review text and identifies common words and phrases.
+2. **Time Series Analysis** – analyzes monthly ratings and forecasts future ratings.
+3. **Neural Networks** – uses TF-IDF features to predict customer ratings from 1–5 stars.
 
-The project uses an Amazon customer reviews dataset containing product information, ratings, review text, review summaries, timestamps, sentiment labels, and review-length information.
-
----
-
-## Project Overview
-
-The objective of this project is to extract useful insights from customer reviews and demonstrate how different analytical techniques can be applied to real-world customer data.
-
-The analysis focuses on:
-
-- Cleaning and preprocessing customer review text
-- Identifying frequent words and bigrams
-- Analyzing customer ratings over time
-- Testing and transforming time-series data
-- Decomposing time-series patterns
-- Selecting and evaluating forecasting models
-- Applying neural network techniques to customer review data
-- Evaluating model performance and drawing business insights
+**Notebook:** `C09_M08(1).ipynb`
+**Dataset:** `amazon_reviews_lab.csv`
 
 ---
 
 ## Dataset
 
-The dataset used in this project is:
+The dataset contains **997 reviews and 9 columns**, including:
 
-`amazon_reviews_lab.csv`
+* Product ID
+* Rating
+* Review text
+* Review summary
+* Review date
+* Sentiment label
+* Review length
 
-The dataset contains the following main variables:
-
-| Column | Description |
-|---|---|
-| `product_id` | Identifier of the reviewed product |
-| `rating` | Customer rating |
-| `review_text` | Full customer review |
-| `review_summary` | Short review summary |
-| `review_time_raw` | Original review date |
-| `unix_review_time` | Review time in Unix format |
-| `timestamp` | Converted review timestamp |
-| `sentiment_label` | Sentiment classification |
-| `review_length_words` | Number of words in the review |
+The ratings are highly imbalanced, with **580 out of 997 reviews rated 5 stars**.
 
 ---
 
-# Part 1: Natural Language Processing
+## NLP Analysis
 
-The NLP section focuses on extracting meaningful patterns from customer review text.
+The review text was processed using:
 
-### Main tasks
+* Lowercasing
+* URL and punctuation removal
+* Tokenization
+* Stopword removal
+* Lemmatization
 
-- Text cleaning
-- Tokenization
-- Stop-word removal
-- Stemming and lemmatization
-- Word-frequency analysis
-- Bigram analysis
-- Sentiment-related analysis
-- Visualization of language patterns
+### Key Results
 
-The analysis helps identify common terms and phrases used by customers and provides insight into the language associated with customer experiences.
+* **Total tokens:** 72,140
+* **Unique tokens:** 8,587
+* Common words include `nook`, `book`, `kindle`, `screen`, `read`, and `device`.
+* Common bigrams include **“battery life,” “nook color,” “kindle fire,”** and **“customer service.”**
+
+These terms highlight common customer discussions about products, usability, performance, and service.
 
 ---
 
-# Part 2: Time Series Analysis
+## Time Series Analysis
 
-The time-series section analyzes **monthly average customer ratings** rather than review volume.
+Monthly average ratings were analyzed using stationarity tests, decomposition, ARIMA models, and residual diagnostics.
 
-The review timestamps were converted into a time-series index and monthly average ratings were calculated.
+### Key Results
 
-### Time Series Workflow
+* **Monthly observations:** 68
+* **Mean monthly rating:** 3.97
+* Initial ADF test showed the series was non-stationary.
+* First differencing made the series stationary.
+* **Best model:** ARIMA(2,1,1)
+* **MAE:** 0.1882
+* **RMSE:** 0.2232
 
-1. Convert timestamps to datetime format
-2. Set the timestamp as the time-series index
-3. Calculate monthly average ratings
-4. Test for stationarity
-5. Apply first-order differencing
-6. Decompose the time series
-7. Analyze ACF and PACF
-8. Compare ARIMA models
-9. Test a seasonal SARIMA model
-10. Perform residual diagnostics
-11. Generate forecasts
+The ARIMA model performed better than the tested SARIMA model and produced a 12-month forecast of relatively stable ratings.
 
-### Stationarity
+---
 
-The original monthly average rating series was found to be non-stationary.
+## Neural Network
 
-The Augmented Dickey-Fuller (ADF) test produced:
+Review text was converted into TF-IDF features and used to train a Keras neural network.
 
-- ADF p-value: `0.5553`
-
-The KPSS test produced:
-
-- KPSS p-value: `0.01`
-
-Both tests indicated that the original series was non-stationary.
-
-After first-order differencing, the ADF test produced:
-
-- ADF p-value: `2.48 × 10⁻⁶`
-
-This indicates that the differenced series is stationary.
-
-Therefore:
+### Model
 
 ```text
-d = 1
+TF-IDF
+   ↓
+Dense(128, ReLU)
+   ↓
+Dropout(50%)
+   ↓
+Dense(64, ReLU)
+   ↓
+Dropout(30%)
+   ↓
+Dense(5, Softmax)
+```
+
+### Results
+
+* **Training reviews:** 797
+* **Testing reviews:** 200
+* **TF-IDF features:** 7,357
+* **Test accuracy:** 57.0%
+* **Macro F1:** 0.176
+
+The model strongly favors 5-star reviews because of the large class imbalance.
+
+---
+
+## Key Findings
+
+| Analysis                | Main Result                                                |
+| ----------------------- | ---------------------------------------------------------- |
+| Dataset                 | 997 reviews                                                |
+| NLP                     | Nook, Kindle, books, screens and devices are common topics |
+| Time Series             | ARIMA(2,1,1) performed best                                |
+| ARIMA RMSE              | 0.2232                                                     |
+| Neural Network Accuracy | 57.0%                                                      |
+| Main ML Limitation      | Strong class imbalance                                     |
+
+---
+
+## Limitations
+
+* Small number of monthly observations.
+* Strong imbalance toward 5-star reviews.
+* Neural network performs poorly on lower rating classes.
+* TF-IDF does not capture deeper language context.
+
+### Future Improvements
+
+* Apply class weighting or oversampling.
+* Compare the neural network with Logistic Regression and SVM.
+* Try more advanced NLP models.
+* Test additional forecasting models.
+* Use macro F1 as an important evaluation metric.
+
+---
+
+## Technologies
+
+Python, Pandas, NumPy, Matplotlib, Seaborn, NLTK, Scikit-learn, Statsmodels, and TensorFlow/Keras.
+
+## Running the Project
+
+Place the notebook and dataset in the same folder:
+
+```text
+project/
+├── C09_M08(1).ipynb
+├── amazon_reviews_lab.csv
+└── README.md
+```
+
+Install dependencies:
+
+```bash
+pip install pandas numpy matplotlib seaborn nltk scikit-learn statsmodels tensorflow
+```
+
+Then open the notebook in Jupyter Notebook, JupyterLab, or VS Code and run the cells sequentially.
+
+## Conclusion
+
+The project demonstrates how **NLP, time-series forecasting, and neural networks** can be combined to analyze customer feedback. The ARIMA model provides useful rating forecasts, while the neural network shows potential for rating prediction but requires better handling of class imbalance.
